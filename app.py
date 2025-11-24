@@ -22,6 +22,8 @@ form_html = """
 <head>
 <title>Trade Submit</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" href="{{ url_for('static', filename='icon.png') }}">
+<link rel="shortcut icon" href="{{ url_for('static', filename='icon.png') }}">
 <style>
 body { font-family: Arial; padding: 20px; }
 input, select, button { width: 100%; padding: 12px; margin-top: 8px; font-size: 16px; }
