@@ -1,14 +1,21 @@
 from flask import Flask, request, render_template_string, redirect
 import requests
 import os
-PORT = int(os.environ.get("PORT", 5000))
-app.run(host="0.0.0.0", port=PORT)
 
+# -----------------------------
+# 1. Define Flask app variable
+# -----------------------------
 app = Flask(__name__)
 
-PASSWORD = "dcdckc"
-DISCORD_WEBHOOK = "YOUR_WEBHOOK_HERE"
+# -----------------------------
+# 2. Get environment variables
+# -----------------------------
+PASSWORD = os.environ.get("dcdckc")
+DISCORD_WEBHOOK = os.environ.get("https://discord.com/api/webhooks/1442390503575388174/0JoLL_1N3q3Tse8ny9WbOi6aeGelSxAQpS4VOBxI062Dp8zG11lGiZs6Abn6jpDneIb3")
 
+# -----------------------------
+# 3. HTML template
+# -----------------------------
 form_html = """
 <!DOCTYPE html>
 <html>
@@ -17,39 +24,43 @@ form_html = """
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body { font-family: Arial; padding: 20px; }
-input, select { width: 100%; padding: 12px; margin-top: 8px; }
-button { width: 100%; padding: 14px; margin-top: 20px; font-size: 18px; }
+input, select, button { width: 100%; padding: 12px; margin-top: 8px; font-size: 16px; }
+button { margin-top: 20px; }
 </style>
 </head>
 <body>
 
-<form method="POST">
-
 {% if not authorized %}
-<input type="password" name="password" placeholder="Password" autofocus>
+<h2>Login</h2>
+<form method="POST">
+<input type="password" name="password" placeholder="Password" autofocus required>
 <button>Login</button>
 </form>
-</body>
-</html>
+
 {% else %}
-<input name="ticker" placeholder="Ticker">
+<h2>Submit Trade</h2>
+<form method="POST">
+<input name="ticker" placeholder="Ticker" required>
 <select name="direction">
   <option>CALL</option>
   <option>PUT</option>
   <option>LONG</option>
   <option>SHORT</option>
 </select>
-<input name="expiration" placeholder="Expiration (MM/DD)">
-<input name="price" placeholder="Price">
-<input name="action" placeholder="Action (Entry/Exit/etc)">
+<input name="expiration" placeholder="Expiration (MM/DD)" required>
+<input name="price" placeholder="Price" required>
+<input name="action" placeholder="Action (Entry/Add/Trim/Exit)" required>
 <button>Submit</button>
 </form>
+{% endif %}
 
 </body>
 </html>
-{% endif %}
 """
 
+# -----------------------------
+# 4. Define routes
+# -----------------------------
 @app.route("/", methods=["GET","POST"])
 def main():
     authorized = request.cookies.get("auth") == PASSWORD
@@ -58,21 +69,28 @@ def main():
         if not authorized:
             if request.form.get("password") == PASSWORD:
                 resp = redirect("/")
-                resp.set_cookie("auth", PASSWORD)  # remembered login
+                resp.set_cookie("auth", PASSWORD)
                 return resp
             return render_template_string(form_html, authorized=False)
 
-        # send trade
+        # send trade to Discord
         msg = f"**{request.form['ticker']} {request.form['direction']}**\n" \
               f"Exp: {request.form['expiration']}\n" \
               f"Price: {request.form['price']}\n" \
               f"Action: {request.form['action']}"
-
-        requests.post(DISCORD_WEBHOOK, json={"content": msg})
+        try:
+            requests.post(DISCORD_WEBHOOK, json={"content": msg})
+        except Exception as e:
+            print("Error sending to Discord:", e)
 
         return redirect("/")
 
     return render_template_string(form_html, authorized=authorized)
 
+# -----------------------------
+# 5. Run app only if this file is main
+# -----------------------------
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
+
