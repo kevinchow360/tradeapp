@@ -10,8 +10,8 @@ app = Flask(__name__)
 # -----------------------------
 # 2. Get environment variables
 # -----------------------------
-PASSWORD = os.environ.get("dcdckc")
-DISCORD_WEBHOOK = os.environ.get("https://discord.com/api/webhooks/1442390503575388174/0JoLL_1N3q3Tse8ny9WbOi6aeGelSxAQpS4VOBxI062Dp8zG11lGiZs6Abn6jpDneIb3")
+PASSWORD = os.environ.get("TRADING_APP_PASSWORD")
+DISCORD_WEBHOOK = os.environ.get("DISCORD_WEBHOOK")
 
 # -----------------------------
 # 3. HTML template
